@@ -1,0 +1,70 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+</head>
+<script src="script/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="script/mqttws31.js"></script>
+
+
+<head>
+
+  <body>
+   <br>
+
+   <input type="button" value="on" onclick="sendMessage('255');"></input>
+   <input type="button" value="off" onclick="sendMessage('0');"></input>
+
+ </body>
+
+ <script type="text/javascript">
+// Create a client instance
+$(document).ready(function(){
+  client = new Paho.MQTT.Client("test.mosquitto.org", 8080 ,"browser");
+
+  // set callback handlers
+  client.onConnectionLost = onConnectionLost;
+  client.onMessageArrived = onMessageArrived;
+
+  // connect the client
+  client.connect({onSuccess:onConnect});
+
+
+  // called when the client connects
+  function onConnect() {
+    // Once a connection has been made, make a subscription and send a message.
+    console.log("onConnect");
+    client.subscribe("test/mqttclient/s");
+
+    message = new Paho.MQTT.Message("Hello");
+    message.destinationName = "/World";
+    client.send(message); 
+  }
+
+  // called when the client loses its connection
+  function onConnectionLost(responseObject) {
+    if (responseObject.errorCode !== 0) {
+      console.log("onConnectionLost:"+responseObject.errorMessage);
+    }
+  }
+
+  // called when a message arrives
+  function onMessageArrived(message) {
+    console.log("onMessageArrived:"+message.payloadString);
+  }
+
+
+
+});
+
+  function sendMessage(val){
+  console.log("sending " + val);
+  message = new Paho.MQTT.Message(val);
+  message.destinationName = "test/mqttclient/s";
+  message.payloadString=val;
+  client.send(message); 
+}
+
+
+</script>
+
+
+</html>
